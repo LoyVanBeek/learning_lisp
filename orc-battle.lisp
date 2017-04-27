@@ -33,7 +33,7 @@
 (defun init-player ()
   (setf *player-health* 30)
   (setf *player-agility* 30)
-  (setf *player-strength* 30)
+  (setf *player-strength* 30))
 
 (defun player-dead ()
   (<= *player-health* 0))
@@ -93,4 +93,45 @@
                              *monster-builders*)))
              (make-array *monster-num*))))
 
+(defun monster-dead (m)
+  (<= (monster-health m) 0))
 
+(defun monsters-dead ()
+  (every #'monster-dead *monsters*))
+
+(defun show-monsters ()
+  (fresh-line)
+  (princ "Your foes: ")
+  (let ((x 0))
+    (map 'list
+         (lambda (m)
+           (fresh-line)
+           (princ (incf x))
+           (princ ". ")
+           (if (monster-dead m)
+             (princ "***Dead***")
+             (progn (princ "Health=")
+                    (princ (monster-health m))
+                    (princ ") ")
+                    (monster-show m))))
+         *monsters*)))
+
+(defstruct monster (health (randval 10)))
+
+(defun monster-hit (m x)
+  (decf (monster-health m) x)
+  (if (monster-dead m)
+    (progn (princ "You killed the ")
+           (princ (type-of m))
+           (princ "!"))
+    (progn (princ "You hit the ")
+           (princ (type-of m))
+           (princ ", knocking off ")
+           (princ x)
+           (princ " health points!"))))
+
+(defmethod monster-show (m)
+  (princ "A fierce ")
+  (print (type-of m)))
+
+(defmethod monster-attack (m))
