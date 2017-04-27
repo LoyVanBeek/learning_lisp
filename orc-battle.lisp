@@ -44,11 +44,11 @@
   (princ " and a agility of ")
   (princ *player-agility*)
   (princ " with a strength of ")
-  (princ *player-strenght*))
+  (princ *player-strength*))
 
 (defun player-attack ()
   (fresh-line)
-  (princ "Attack style: [s]tab, [d]ouble or [r]oundhouse kick:")
+  (princ "Attack style: [s]tab, [d]ouble or [r]oundhouse kick: ")
   (case (read)
     (s (monster-hit (pick-monster)
                     (+ 2 (randval (ash *player-strength*)))))
@@ -56,8 +56,8 @@
          (princ "Your double swing has a strenght of ")
          (princ x)
          (fresh-line)
-         (monster-hit (monster-pick) x)
-         (unless (monster-dead)
+         (monster-hit (pick-monster) x)
+         (unless (monsters-dead)
            (monster-hit (pick-monster) x))))
     (otherwise (dotimes (x (1+ (randval (truncate (/ *player-strength* 3)))))
                  (unless (monsters-dead)
@@ -76,11 +76,11 @@
   (fresh-line)
   (princ "Monster#: ")
   (let ((x (read)))
-    (if (not (integerp x) (>= x 1) (<= x *monster-num*))
+    (if (not (and (integerp x) (>= x 1) (<= x *monster-num*)))
       (progn (princ "Invalid monster number, try again")
              (pick-monster))
     (let ((m (aref *monsters* (1- x))))
-      (if (moster-dead m)
+      (if (monster-dead m)
         (progn (princ "You picked an already dead monster")
                (pick-monster))
         m)))))
@@ -110,7 +110,7 @@
            (princ ". ")
            (if (monster-dead m)
              (princ "***Dead***")
-             (progn (princ "Health=")
+             (progn (princ "(Health=")
                     (princ (monster-health m))
                     (princ ") ")
                     (monster-show m))))
@@ -118,7 +118,7 @@
 
 (defstruct monster (health (randval 10)))
 
-(defun monster-hit (m x)
+(defmethod monster-hit (m x)
   (decf (monster-health m) x)
   (if (monster-dead m)
     (progn (princ "You killed the ")
@@ -175,7 +175,7 @@
     (incf (monster-health m))
     (decf *player-health* x)))
 
-(defstruct (slime-mold (:include emonster) (sliminess (randval 5))))
+(defstruct (slime-mold (:include monster)) (sliminess (randval 5)))
 (push #'make-slime-mold *monster-builders*)
 
 (defmethod monster-show ((m slime-mold))
@@ -207,3 +207,7 @@
            (princ "A brigand cuts off your arm with his whip, taking off 2 health points! ")
            (decf *player-health* 2)))))
 
+(defmethod monster-show ((m brigand))
+  (princ "A brigand with a nasty whip"))
+
+(eval '(orc-battle))
