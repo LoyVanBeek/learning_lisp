@@ -24,3 +24,29 @@
                                   collecting (1+ (random 10))))))
 
 
+(defun move (animal)
+  (let ((dir (animal-dir animal))
+        (x (animal-x animal))
+        (y (animal-y animal)))
+    (setf (animal-x animal) (mod (+ x
+                                    (cond ((and (>= dir 2) (< dir 5)) 1)
+                                          ((or (= dir 1) (= dir 5)) 0)
+                                          (t -1)))
+                                 *width*))
+    (setf (animal-y animal) (mod (+ y
+                                    (cond ((and (>= dir 0) (< dir 3)) -1)
+                                          ((and (>= dir 4) (< dir 7)) 1)
+                                          (t 0)))
+                                 *height*))
+    (decf (animal-energy animal))))
+
+(defun turn (animal)
+  (let ((x (random (apply #'+ (animal-genes animal)))))
+    (labels ((angle (genes x)
+                    (let ((xnu (- x (car genes))))
+                      (if (< xnu 0)
+                        0
+                        (1+ (angle (cdr genes) xnu))))))
+      (setf (animal-dir animal)
+            (mod (+ (animal-dir animal) (angle (animal-genes animal) x))
+                 8)))))
